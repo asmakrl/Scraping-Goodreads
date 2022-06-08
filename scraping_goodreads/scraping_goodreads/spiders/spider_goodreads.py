@@ -11,29 +11,35 @@ class GoodreadsSpider( scrapy.Spider ):
 
   start_urls = [
     
-    'https://www.goodreads.com/book/show/10210.Jane_Eyre'
+    #'https://www.goodreads.com/book/show/10210.Jane_Eyre'
     #'https://www.goodreads.com/genres/list'
+    'https://www.goodreads.com/shelf/show/data-science'
 
     ]
-    
+  base_url = 'https://www.goodreads.com'
+  
   reviews_ratings = []
 
   informations = ScrapingGoodreadsItem()
 
 
-  # First parse method
-  def parse( self, response ):
-    
+  
+   #First parsing method
+  def parse(self, response):
     items = ScrapingGoodreadsItem()
+
+    for link in response.css(".elementList a.bookTitle::attr(href)"):
+
+        yield response.follow(link, self.parse)
     
     if (GoodreadsSpider.page_number == 2):
-      title = response.css('#bookTitle::text').extract_first().strip()
+      title = response.css('#bookTitle::text').extract_first()#.strip()
       GoodreadsSpider.informations['titles'] = title
 
-      authors = response.css("a.authorName>span ::text").extract_first().strip()
+      authors = response.css("a.authorName>span ::text").extract_first()#.strip()
       GoodreadsSpider.informations['authors'] = authors
 
-      global_rating = response.css("#bookMeta span ::text").extract_first().strip()
+      global_rating = response.css("#bookMeta span ::text").extract_first()#.strip()
       GoodreadsSpider.informations['global_rating'] = global_rating
 
     
@@ -72,18 +78,18 @@ class GoodreadsSpider( scrapy.Spider ):
       reviews_dict = {'reviews': items['review'] , 'ratings': items['rating']}
       GoodreadsSpider.reviews_ratings.append(reviews_dict)
 
-    next_page = 'https://www.goodreads.com/book/show/10210.Jane_Eyre?page='+ str(GoodreadsSpider.page_number) 
+    #next_page = '?page='+ str(GoodreadsSpider.page_number) 
    
-    if response:
+    #if response:
 
-      GoodreadsSpider.page_number+=1
+      #GoodreadsSpider.page_number+=1
       
-      yield response.follow(next_page, callback=self.parse)
+      #yield response.follow(next_page, callback=self.parse)
     
-    request = requests.head(next_page)
-    code_status = request.status_code
-    website_isup = code_status == 400
-    print(website_isup)
-    if website_isup:
-      GoodreadsSpider.informations['reviews'] = GoodreadsSpider.reviews_ratings
-      yield {'Books' : GoodreadsSpider.informations}
+    #request = requests.head(next_page)
+    #code_status = request.status_code
+    #website_isup = code_status == 400
+    #print(website_isup)
+    #if website_isup:
+    GoodreadsSpider.informations['reviews'] = GoodreadsSpider.reviews_ratings
+    yield {'Books' : GoodreadsSpider.informations}

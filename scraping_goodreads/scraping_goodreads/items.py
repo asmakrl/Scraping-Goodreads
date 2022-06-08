@@ -25,3 +25,5 @@ class ScrapingGoodreadsItem(scrapy.Item):
     Informations = scrapy.Field()
     reviews_dict = scrapy.Field()
     Books = scrapy.Field()
+
+   
